@@ -17,6 +17,7 @@ import Cart from './views/base/Cart';
 import { CartContext } from './views/plugin/Context';
 import CartId from './views/plugin/CartId';
 import apiInstance from './utils/axios';
+import Checkout from '../src/views/base/Checkout';
 
 
 
@@ -53,6 +54,7 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path={`/course-detail/:slug/`} element={<CourseDetail />} />
             <Route path={`/cart/`} element={<Cart />} />
+            <Route path={`/checkout/:order_oid/`} element={<Checkout />} />
 
           </Routes>
         </MainWrapper>

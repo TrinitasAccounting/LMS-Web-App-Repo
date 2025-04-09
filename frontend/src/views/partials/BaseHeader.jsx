@@ -6,8 +6,6 @@ function BaseHeader() {
 
     const [cartCount, setCartCount] = useContext(CartContext)
 
-    console.log(cartCount)
-
 
     return (
         <div>

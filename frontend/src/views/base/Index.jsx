@@ -17,7 +17,6 @@ import { CartContext } from '../plugin/Context';
 
 function Index() {
 
-    let test1234567 = 1234567;
 
     const [courses, setCourses] = useState([])
     const [isLoading, setIsLoading] = useState(true)

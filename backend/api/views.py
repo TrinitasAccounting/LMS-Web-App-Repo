@@ -368,7 +368,7 @@ class CreateOrderAPIView(generics.CreateAPIView):
 
         order.save()
 
-        return Response({'message': "Order Created Successfully"}, status=status.HTTP_201_CREATED)
+        return Response({'message': "Order Created Successfully", "order_oid": order.oid}, status=status.HTTP_201_CREATED)
 
 
 
@@ -417,12 +417,12 @@ class CouponApplyAPIView(generics.CreateAPIView):
                     order.save()
                     coupon.used_by.add(order.student)
 
-                    return Response({"message": "Coupon Found and Activated"}, status=status.HTTP_201_CREATED)
+                    return Response({"message": "Coupon Found and Activated", "icon": "success"}, status=status.HTTP_201_CREATED)
                 else:
-                    return Response({"message": "Coupon Already Applied"}, status=status.HTTP_200_OK)
+                    return Response({"message": "Coupon Already Applied", "icon": "warning"}, status=status.HTTP_200_OK)
 
         else:
-            return Response({"message": "Coupone Not Found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "Coupone Not Found", "icon": "error"}, status=status.HTTP_404_NOT_FOUND)
 
 
 
