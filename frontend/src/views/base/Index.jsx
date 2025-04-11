@@ -91,7 +91,17 @@ function Index() {
     }
 
 
-
+    //Pagination
+    const itemsPerPage = 2
+    const [currentPage, setCurrentPage] = useState(1)
+    const indexOfLastItem = currentPage * itemsPerPage       // Calculating the index of the last item on page by this calculation
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage   // calculating index of the first item on the page
+    const currentItems = courses.slice(indexOfFirstItem, indexOfLastItem)    // 
+    const totalPages = Math.ceil(courses.length / itemsPerPage)              // calculating total number of pages we need to show
+    const pageNumbers = Array.from(
+        { length: totalPages },
+        (_, index) => index + 1           // we are mapping the pages to the correct index with this I believe
+    )
 
 
     return (
@@ -226,7 +236,7 @@ function Index() {
                         <div className="col-md-12">
                             <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
 
-                                {courses?.map((c, index) => {
+                                {currentItems?.map((c, index) => {
                                     return (
                                         <div className="col">
                                             {/* Card */}
@@ -335,44 +345,6 @@ function Index() {
 
 
 
-                                <nav className="d-flex mt-5">
-                                    <ul className="pagination">
-                                        <li
-                                            className=""
-                                        >
-                                            <button
-                                                className="page-link me-1"
-                                            >
-                                                <i className="ci-arrow-left me-2" />
-                                                Previous
-                                            </button>
-                                        </li>
-                                    </ul>
-                                    <ul className="pagination">
-                                        <li
-                                            key={1}
-                                            className="active"
-                                        >
-                                            <button
-                                                className="page-link"
-                                            >
-                                                1
-                                            </button>
-                                        </li>
-                                    </ul>
-                                    <ul className="pagination">
-                                        <li
-                                            className={`totalPages`}
-                                        >
-                                            <button
-                                                className="page-link ms-1"
-                                            >
-                                                Next
-                                                <i className="ci-arrow-right ms-3" />
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </nav>
 
 
 
@@ -387,6 +359,54 @@ function Index() {
 
 
                             </div>
+                            <nav className="d-flex mt-5">
+                                <ul className="pagination">
+                                    <li
+                                        className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+                                    >
+                                        <button
+                                            onClick={() => setCurrentPage(currentPage - 1)}
+                                            className="page-link me-1"
+                                        >
+                                            <i className="ci-arrow-left me-2" />
+                                            Previous
+                                        </button>
+                                    </li>
+                                </ul>
+                                <ul className="pagination">
+                                    {pageNumbers.map((number) => {
+                                        return (
+                                            <li
+                                                key={number}
+                                                className={`page-item ${currentPage === number ? "active" : ""}`}
+                                            >
+                                                <button
+                                                    onClick={() => setCurrentPage(number)}
+                                                    className="page-link"
+                                                >
+                                                    {number}
+                                                </button>
+                                            </li>
+
+                                        )
+                                    })}
+
+
+                                </ul>
+                                <ul className="pagination">
+                                    <li
+                                        className={`totalPages ${currentPage === totalPages ? "disabled" : ""}`}
+                                    >
+                                        <button
+                                            onClick={() => setCurrentPage(currentPage + 1)}
+                                            className="page-link ms-1"
+                                        >
+                                            Next
+                                            <i className="ci-arrow-right ms-3" />
+                                        </button>
+                                    </li>
+                                </ul>
+                            </nav>
 
                         </div>
                     </div>

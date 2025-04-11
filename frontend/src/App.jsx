@@ -18,6 +18,8 @@ import { CartContext } from './views/plugin/Context';
 import CartId from './views/plugin/CartId';
 import apiInstance from './utils/axios';
 import Checkout from '../src/views/base/Checkout';
+import Success from './views/base/Success';
+import Search from '../src/views/base/Search';
 
 
 
@@ -55,6 +57,8 @@ function App() {
             <Route path={`/course-detail/:slug/`} element={<CourseDetail />} />
             <Route path={`/cart/`} element={<Cart />} />
             <Route path={`/checkout/:order_oid/`} element={<Checkout />} />
+            <Route path={`/payment-success/:order_oid/`} element={<Success />} />
+            <Route path={`/search/`} element={<Search />} />
 
           </Routes>
         </MainWrapper>

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useContext } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { PayPalButtons, PayPalScriptProvider } from '@paypal/react-paypal-js'
 
 import BaseHeader from '../partials/BaseHeader'
 import BaseFooter from '../partials/BaseFooter'
@@ -11,15 +12,17 @@ import Toast from '../plugin/Toast';
 import { CartContext } from '../plugin/Context';
 // import UserData from '../plugin/UserData';
 import { userId } from '../../utils/constants';
+import { PAYPAL_CLIENT_ID } from '../../utils/constants'
 
 
 function Checkout() {
+
     const [order, setOrder] = useState([])
     const [coupon, setCoupon] = useState("")
-
-    console.log(coupon)
+    const [paymentLoading, setPaymentLoading] = useState(false);
 
     const param = useParams()
+    const navigate = useNavigate()
 
     // Fetching the order by calling to the database with the criteria
     const fetchOrder = async () => {
@@ -63,6 +66,21 @@ function Checkout() {
                 title: "Coupon code not found or can't be applied"
             })
         }
+    }
+
+
+    // Paypal Payment Options
+    const initialOptions = {
+        clientId: PAYPAL_CLIENT_ID,       // we can hard code this in if we wanted to I believe, but right now it is in constants.js. In Production, this needs to be a real Paypal client id and not using 'test' like we are in development
+        currency: "USD",
+        intent: "capture",
+    };
+
+
+    // Stripe payment
+    const payWithStripe = (event) => {
+        setPaymentLoading(true)
+        event.target.form.submit()
     }
 
 
@@ -257,8 +275,66 @@ function Checkout() {
                                                 </li>
                                             </ul>
                                             <div className="d-grid">
-                                                <Link to={`/success/txn_id/`} className="btn btn-lg btn-success mt-2"> Pay With PayPal</Link>
-                                                <Link to={`/success/txn_id/`} className="btn btn-lg btn-success mt-2"> Pay With Stripe</Link>
+
+                                                {/* STRIPE PAYMENT BUTTON AND FORM  ___________________________*/}
+                                                <form
+                                                    action={`http://127.0.0.1:8000/api/v1/payment/stripe-checkout/${order.oid}`}
+                                                    className='w-100'
+                                                    method="POST"
+                                                >
+
+                                                    {paymentLoading === true ?
+                                                        <button
+                                                            type="submit"
+                                                            disabled
+                                                            className="btn btn-lg btn-success mt-2 w-100"
+                                                        >
+                                                            Processing <i className='fas fa-spinner fa-spin'></i>
+                                                        </button>
+                                                        :
+                                                        <button
+                                                            type="submit"
+                                                            onClick={payWithStripe}
+                                                            className="btn btn-lg btn-success mt-2 w-100"
+                                                        >
+                                                            Pay With Stripe
+                                                        </button>
+                                                    }
+
+
+                                                </form>
+
+                                                {/* PAYPAL BUTTON WITH CONFIGURATION FROM PAYPAL DOCUMENTATION */}
+                                                <PayPalScriptProvider options={initialOptions}>
+                                                    <PayPalButtons className='mt-3'
+                                                        createOrder={(data, actions) => {
+                                                            return actions.order.create({
+                                                                purchase_units: [
+                                                                    {
+                                                                        amount: {
+                                                                            currency_code: "USD",
+                                                                            value: order.total.toString()              // we updated this value
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            })
+                                                        }}
+
+                                                        onApprove={(data, actions) => {
+                                                            return actions.order.capture().then((details) => {
+                                                                const name = details.payer.name.given_name;
+                                                                const status = details.status;
+                                                                const paypal_order_id = data.orderID;
+
+                                                                console.log(status);
+                                                                if (status === "COMPLETED") {
+                                                                    navigate(`/payment-success/${order.oid}/?paypal_order_id=${paypal_order_id}`)          // Reason we are passing in the paypal_order_id is because in the APIView, we need the order_oid, session_id, and the paypal_order_id
+                                                                }
+                                                            })
+                                                        }}
+                                                    />
+                                                </PayPalScriptProvider>
+
                                             </div>
                                             <p className="small mb-0 mt-2 text-center">
                                                 By proceeding to payment, you agree to these{" "}<a href="#"> <strong>Terms of Service</strong></a>
