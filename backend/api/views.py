@@ -592,7 +592,56 @@ class SearchCourseAPIView(generics.ListAPIView):
 
         
 
+# This is how we are returning the count of courses enrolled and etc for a particular student
+class StudentSummaryAPIView(generics.ListAPIView):
+    serializer_class = api_serializer.StudentSummarySerializer
+    permission_classes = [AllowAny]
 
+    # Because this is just a serializer and not a model, we have to override the queryset. This I am quite confused about honestly
+    # It appears that maybe the serializer is just being used to help deliver the values in JSON format when the frontend fetches them?
+    # It appears that we don't need a model, we just need a view to fetch the data based on the user's id. 
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        user = User.objects.get(id=user_id)
+
+        total_courses = api_models.EnrolledCourse.objects.filter(user=user).count()
+        completed_lessons = api_models.CompletedLesson.objects.filter(user=user).count()
+        achieved_certificates = api_models.Certificate.objects.filter(user=user).count()
+
+        return [{
+            'total_courses': total_courses,
+            "completed_lessons": completed_lessons,
+            "achieved_certificates": achieved_certificates
+        }]
+
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()                     # we are grabbing the custom queryset we have written above 
+        # We have to serializer the queryset, because our queryset is returning django objects so these need to be turned in JSON
+        serializer = self.get_serializer(queryset, many=True)                   # calling this is getting the serializer_class we set in the above code
+        return Response(serializer.data)                                 # this serializer.data will now be the queryset return value but parsed into JSON instead of the Django object
+
+
+
+
+class StudentCourseListAPIView(generics.ListAPIView):
+    serializer_class = api_serializer.EnrolledCourseSerializer             # this is the model that we keep track of what courses a user is enrolled in, so we are going to use this serializer
+    permission_classes = [AllowAny]                                       # going to show us how to change these to isAuthenticated in the future
+
+    # we could just pass in a lookup_field and it will fetch all the courses based on that lookup value. And we wouldn't need a lot of the overidding code below
+    # lookup_field = "user"
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']                  # grabbing the user_id from the passed in value (probably will be grabbed from the url using useParams() on the frontend)
+        user = User.objects.get(id=user_id)               # the enrolled course model takes a user, so we are grabbing the entire user based on the user_id
+
+        return api_models.EnrolledCourse.objects.filter(user=user)      # useing the user variable, to filter through the EnrolledCourses and returning all that match that User. 
+
+
+
+
+# class UsersListAPIView(generics.ListAPIView):
+#     serializer_class = api_serializer.
 
 
 

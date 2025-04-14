@@ -357,7 +357,7 @@ class EnrolledCourse(models.Model):
 
     
     def lectures(self):
-        return VariantItem.onjects.filter(variant__course=self.course)      # called a field lookup
+        return VariantItem.objects.filter(variant__course=self.course)      # called a field lookup
 
 
     def completed_lesson(self):
@@ -372,7 +372,7 @@ class EnrolledCourse(models.Model):
         return Note.objects.filter(course=self.course, user=self.user)
 
 
-    def question_answer(Self):
+    def question_answer(self):
         return Question_Answer.objects.filter(course=self.course)
 
     

@@ -29,6 +29,11 @@ urlpatterns = [
     path('payment/payment-sucess/', api_views.PaymentSuccessAPIView.as_view()),
 
 
+    #  Student API Endpoints
+    path("student/summary/<user_id>/", api_views.StudentSummaryAPIView.as_view()),
+    path("student/course-list/<user_id>/", api_views.StudentCourseListAPIView.as_view()),
+
+
 ]
 
 

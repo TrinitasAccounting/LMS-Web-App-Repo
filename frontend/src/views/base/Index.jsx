@@ -25,6 +25,8 @@ function Index() {
     const cartId = CartId();
     const [cartCount, setCartCount] = useContext(CartContext)
 
+    // console.log(UserData())
+
 
 
     const fetchCourse = async () => {
@@ -91,7 +93,7 @@ function Index() {
     }
 
 
-    //Pagination
+    //Pagination________________________________________________________________
     const itemsPerPage = 2
     const [currentPage, setCurrentPage] = useState(1)
     const indexOfLastItem = currentPage * itemsPerPage       // Calculating the index of the last item on page by this calculation
@@ -102,6 +104,8 @@ function Index() {
         { length: totalPages },
         (_, index) => index + 1           // we are mapping the pages to the correct index with this I believe
     )
+
+
 
 
     return (
