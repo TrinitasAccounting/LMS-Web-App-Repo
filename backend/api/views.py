@@ -639,9 +639,22 @@ class StudentCourseListAPIView(generics.ListAPIView):
 
 
 
+class StudentCourseDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = api_serializer.EnrolledCourseSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'enrollment_id'               # I believe this lookup_field will actually be enough on it's on
 
-# class UsersListAPIView(generics.ListAPIView):
-#     serializer_class = api_serializer.
+    def get_object(self):
+        user_id = self.kwargs['user_id']
+        enrollment_id = self.kwargs['enrollment_id']
+
+        user = User.objects.get(id=user_id)
+        return api_models.EnrolledCourse.objects.get(user=user, enrollment_id=enrollment_id)
+        
+
+
+
+
 
 
 
