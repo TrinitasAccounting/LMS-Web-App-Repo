@@ -1,11 +1,38 @@
-import React from 'react'
+import React, { useState, useEffect, useContext } from 'react'
+
 import BaseHeader from '../partials/BaseHeader'
 import BaseFooter from '../partials/BaseFooter'
 import Sidebar from './Partials/Sidebar'
 import Header from './Partials/Header'
 
+import useAxios from '../../utils/useAxios'
+import UserData from '../plugin/UserData'
+import Toast from '../plugin/Toast'
+// import { ProfileContext } from "../plugin/Context"
+
+
+
 
 function ChangePassword() {
+    const [password, setPassword] = useState({
+        old_password: "",
+        new_password: "",
+        confirm_new_password: "",
+    })
+
+
+    // Function to handle onChange when our password is updated
+    const handlePasswordChange = (event) => {
+        setPassword({ ...password, [event.target.name]: event.target.value })
+    }
+    console.log(password)
+
+
+    // Post function that will actually change password
+
+
+
+
     return (
         <>
             <BaseHeader />
@@ -39,6 +66,9 @@ function ChangePassword() {
                                                     className="form-control"
                                                     placeholder="**************"
                                                     required=""
+                                                    name="old_password"
+                                                    value={password.old_password}
+                                                    onChange={handlePasswordChange}
                                                 />
                                             </div>
                                             {/* Last name */}
@@ -52,6 +82,9 @@ function ChangePassword() {
                                                     className="form-control"
                                                     placeholder="**************"
                                                     required=""
+                                                    name="new_password"
+                                                    value={password.new_password}
+                                                    onChange={handlePasswordChange}
                                                 />
                                             </div>
 
@@ -66,6 +99,9 @@ function ChangePassword() {
                                                     className="form-control"
                                                     placeholder="**************"
                                                     required=""
+                                                    name="confirm_new_password"
+                                                    value={password.confirm_new_password}
+                                                    onChange={handlePasswordChange}
                                                 />
                                                 <div className="invalid-feedback">Please choose country.</div>
                                             </div>

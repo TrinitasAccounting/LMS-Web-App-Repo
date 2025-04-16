@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
+from django.contrib.auth.hashers import check_password
 
 from api import serializer as api_serializer
 from userauths.models import User, Profile
@@ -111,6 +112,28 @@ class PasswordChangeAPIView(generics.CreateAPIView):
 
         else:
             return Response({"message": "User does not exists"}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+class ChangePasswordAPIView(generics.CreateAPIView):
+    serializer_class = api_serializer.UserSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        user_id = request.data['user_id']
+        old_password = request.data['old_password']
+        new_password = request.data['new_password']
+
+        user = User.objects.get(id=user_id)
+        if user is not None:
+            if check_password(old_password, user.password):       # this will check to see if the users password matches the old_password
+                user.set_password(new_password)                   # setting a new password for this user. I think this is a built in Django User model method
+                user.save()
+                return Response({"message": "Passowrd changed successfully", "icon": "success"})
+            else:
+                return Response({"message": "Old password is incorrect", "icon": "warning"})
+        else:
+            return Response({"message": "User does not exist", "icon": "error"})
 
 
 
@@ -652,6 +675,30 @@ class StudentCourseDetailAPIView(generics.RetrieveAPIView):
         return api_models.EnrolledCourse.objects.get(user=user, enrollment_id=enrollment_id)
         
 
+
+class StudentCourseCompletedCreateAPIView(generics.CreateAPIView):
+    serializer_class = api_serializer.CompletedLessonSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        user_id = request.data['user_id']
+        course_id = request.data['course_id']
+        variant_item_id = request.data['variant_item_id']
+
+        user = User.objects.get(id=user_id)
+        course = api_models.Course.objects.get(id=course_id)
+        variant_item = api_models.VariantItem.objects.get(variant_item_id=variant_item_id)
+
+        # fetching all completed lessons for this user and the course and the variant_item (which is the specific lesson name inside of the course)
+        completed_lessons = api_models.CompletedLesson.objects.filter(user=user, course=course, variant_item=variant_item).first()
+
+        if completed_lessons:
+            # This is actually so we can send the same fetch to this route, and mark the completed course as not completed anymore. Some what like a true false type of situation, so we can easily mark and unmark completed lessons
+            completed_lessons.delete()
+            return Response({"message": "Course marked as NOT completed"})
+        else:
+            api_models.CompletedLesson.objects.create(user=user, course=course, variant_item=variant_item)
+            return Response({"message": "Course marked as completed"})
 
 
 

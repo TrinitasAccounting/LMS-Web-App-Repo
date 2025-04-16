@@ -10,6 +10,7 @@ import Login from '../src/views/auth/Login';
 import Logout from './views/auth/Logout';
 import ForgotPassword from './views/auth/ForgotPassword';
 import CreateNewPassword from './views/auth/CreateNewPassword';
+import ChangePassword from './views/student/ChangePassword';
 
 import Index from './views/base/Index';
 import CourseDetail from './views/base/CourseDetail';
@@ -50,6 +51,8 @@ function App() {
             <Route path="/logout/" element={<Logout />} />
             <Route path="/forgot-password/" element={<ForgotPassword />} />
             <Route path="/create-new-password/" element={<CreateNewPassword />} />
+            {/* <Route path="/change-password/" element={<ChangePassword />} /> */}
+
 
 
             {/* Base Routes */}
@@ -59,6 +62,10 @@ function App() {
             <Route path={`/checkout/:order_oid/`} element={<Checkout />} />
             <Route path={`/payment-success/:order_oid/`} element={<Success />} />
             <Route path={`/search/`} element={<Search />} />
+
+
+            {/* Student Routes */}
+            <Route path="/student/change-password/" element={<ChangePassword />} />
 
           </Routes>
         </MainWrapper>
