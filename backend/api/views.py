@@ -702,6 +702,47 @@ class StudentCourseCompletedCreateAPIView(generics.CreateAPIView):
 
 
 
+class StudentNoteCreateAPIView(generics.CreateAPIView):
+    serializer_class = api_serializer.NoteSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        user_id = request.data['user_id']
+        enrollment_id = request.data['enrollment_id']
+        title = request.data['title']
+        note = request.data['note']
+
+        user = User.objects.get(id=user_id)
+        enrolled = api_models.EnrolledCourse.objects.get(enrollment_id=enrollment_id)
+
+        api_models.Note.objects.create(user=user, course=enrolled.course, note=note, title=title)
+
+        return Response({"message": "Note created successfully"}, status=status.HTTP_201_CREATED)
+        
+
+
+class StudentNoteDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = api_serializer.NoteSerializer
+    permission_classes = [AllowAny]
+
+    # I believe we dont need any of the below if this was a simple Retrieve only, we could just grab it by the note_id in the notes model
+
+
+    def get_object(self):
+        user_id = self.kwargs['user_id']
+        enrollment_id = self.kwargs['enrollment_id']
+        note_id = self.kwargs['note_id']
+
+        user = User.objects.get(id=user_id)
+        enrolled = api_models.EnrolledCourse.objects.get(enrollment_id=enrollment_id)
+        note = api_models.Note.objects.get(user=user, course=enrolled.course, id=note_id)       # if we make this note_id=note_id, then we can fetch the note simply by the note_id
+
+        return note
+
+
+
+
+
 
 
 

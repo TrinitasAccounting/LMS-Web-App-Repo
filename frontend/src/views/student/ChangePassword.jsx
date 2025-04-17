@@ -29,6 +29,37 @@ function ChangePassword() {
 
 
     // Post function that will actually change password
+    const changePasswordSubmit = async (event) => {
+        event.preventDefault()
+
+        if (password.confirm_new_password !== password.new_password) {
+            Toast().fire({
+                icon: "error",
+                title: "Password does not match"
+            })
+        }
+        // else if (password.old_password === password.new_password) {
+        //     Toast().fire({
+        //         icon: "error",
+        //         title: "Use a different password from the old one"
+        //     })
+        // }
+        else {
+            // Creating our formdata to be passed to the backend API with the POST call
+            const formdata = new FormData()
+            formdata.append("user_id", UserData()?.user_id)
+            formdata.append("old_password", password.old_password)
+            formdata.append("new_password", password.new_password)
+
+            await useAxios().post(`user/change-password/`, formdata).then((res) => {
+                console.log(res.data)
+                Toast().fire({
+                    icon: res.data.icon,
+                    title: "Password changed successfully"
+                })
+            })
+        }
+    }
 
 
 
@@ -54,7 +85,11 @@ function ChangePassword() {
                                 {/* Card body */}
                                 <div className="card-body">
                                     <div>
-                                        <form className="row gx-3 needs-validation" noValidate="">
+                                        <form
+                                            className="row gx-3 needs-validation"
+                                            noValidate=""
+                                            onSubmit={changePasswordSubmit}
+                                        >
                                             {/* First name */}
                                             <div className="mb-3 col-12 col-md-12">
                                                 <label className="form-label" htmlFor="fname">

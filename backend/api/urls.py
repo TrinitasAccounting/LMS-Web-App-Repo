@@ -37,6 +37,8 @@ urlpatterns = [
     path("student/course-list/<user_id>/", api_views.StudentCourseListAPIView.as_view()),
     path("student/course-detail/<user_id>/<enrollment_id>/", api_views.StudentCourseDetailAPIView.as_view()),
     path("student/course-completed/", api_views.StudentCourseCompletedCreateAPIView.as_view()),
+    path("student/course-note/", api_views.StudentNoteCreateAPIView.as_view()),
+    path("student/course-note-detail/<user_id>/<enrollment_id>/<note_id>/", api_views.StudentNoteDetailAPIView.as_view()),     # I think RetrieveAPIView require the url parameters
     
 
 
