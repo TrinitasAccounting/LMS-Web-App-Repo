@@ -701,10 +701,23 @@ class StudentCourseCompletedCreateAPIView(generics.CreateAPIView):
             return Response({"message": "Course marked as completed"})
 
 
-
-class StudentNoteCreateAPIView(generics.CreateAPIView):
+# Fetching a list of all notes for this user related to a specific course
+# And it will create a new note for the course written by a specific user
+class StudentNoteCreateAPIView(generics.ListCreateAPIView):
     serializer_class = api_serializer.NoteSerializer
     permission_classes = [AllowAny]
+
+    # For the List fetch portion of this view
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        enrollment_id = self.kwargs['enrollment_id']
+
+        user = User.objects.get(id=user_id)
+        enrolled = api_models.EnrolledCourse.objects.get(enrollment_id=enrollment_id)
+
+        return api_models.Note.objects.filter(user=user, course=enrolled.course)
+
+
 
     def create(self, request, *args, **kwargs):
         user_id = request.data['user_id']
@@ -741,7 +754,147 @@ class StudentNoteDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 
 
+class StudentRateCourseCreateAPIView(generics.CreateAPIView):
+    serializer_class = api_serializer.ReviewSerializer
+    permission_classes = [AllowAny]
 
+    def create(self, request, *args, **kwargs):
+        user_id = request.data['user_id']
+        course_id = request.data['course_id'] 
+        rating = request.data['rating']                    # Rating is passed in as an integer value, because that is how we wrote our model
+        review = request.data['review']
+
+        user = User.objects.get(id=user_id)
+        course = api_models.Course.objects.get(course_id=course_id)          # he has this as id=course_id   which may cause an issue on the frontend since we will have to pass the course course_id through
+
+        api_models.Review.objects.create(
+            user=user,
+            course=course,
+            review=review,
+            rating=rating,
+            active=True,          # this is another way to automatically set the review as active instead of having to change it in our model   
+        )
+
+        return Response({"message": "Review Created successfully"} )
+
+
+
+
+class StudentRateCourseUpdateAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = api_serializer.ReviewSerializer
+    permission_classes = [AllowAny]
+
+    def get_object(self):
+        user_id = self.kwargs['user_id']             # these two lines of information are passed into the url. And it is how we will know what database row to go and fetch
+        review_id = self.kwargs['review_id']
+
+        user = User.objects.get(id=user_id)
+        return api_models.Review.objects.get(id=review_id, user=user)
+
+
+
+class StudentWishListListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = api_serializer.WishlistSerializer
+    permission_classes = [AllowAny]
+
+    # GET ALL for this view route
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        user = User.objects.get(id=user_id)
+
+        return api_models.Wishlist.objects.filter(user=user)
+
+    
+    # POST for this view route
+    def create(self, request, *args, **kwargs):
+        user_id = request.data['user_id']
+        course_id = request.data['course_id']
+
+        user = User.objects.get(id=user_id)
+        course = api_models.Course.objects.get(course_id=course_id)                   # he used id=course_id instead of my course_id=course_id
+
+        wishlist = api_models.Wishlist.objects.filter(user=user, course=course).first()                   # changing from .get() to this solved a 500 internal server error. I guess it couldn't find a wishlist if it didnt exist with the .get()
+        
+        # Checking if the wishlist exist and if it does, then we delete it and if not, we create it
+        if wishlist:
+            wishlist.delete()
+            return Response({"message": "Wishlist deleted"}, status=status.HTTP_200_OK)
+        else:
+            api_models.Wishlist.objects.create(
+                user=user,
+                course=course
+            )
+            return Response({"message": "Wishlist created"}, status=status.HTTP_201_CREATED)
+
+
+
+
+class QuestionAnswerListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = api_serializer.Question_AnswerSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_id']
+        course = api_models.Course.objects.get(course_id=course_id)
+        return api_models.Question_Answer.objects.filter(course=course)
+
+    
+    def create(self, request, *args, **kwargs):
+        course_id = request.data['course_id']
+        user_id = request.data['user_id']
+        title = request.data['title']
+        message = request.data['message']
+
+        user = User.objects.get(id=user_id)
+        course = api_models.Course.objects.get(course_id=course_id)
+        
+        # Created a new question but this is not creating new messages
+        question = api_models.Question_Answer.objects.create(
+            course=course,
+            user=user,
+            title=title
+        )
+
+        # creating messages for it I believe
+        api_models.Question_Answer_Message.objects.create(
+            course=course,
+            user=user,
+            message=message,
+            question=question
+        )
+
+        return Response({"message": "Group conversation Start"}, status=status.HTTP_201_CREATED)
+        
+
+
+
+class QuestionAnswerMessageSendAPIView(generics.CreateAPIView):
+    serializer_class = api_serializer.Question_Answer_MessageSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        course_id = request.data['course_id']
+        qa_id = request.data['qa_id']
+        user_id = request.data['user_id']
+        message = request.data['message']
+
+        user = User.objects.get(id=user_id)
+        course = api_models.Course.objects.get(course_id=course_id)
+        question = api_models.Question_Answer.objects.get(qa_id=qa_id)
+
+        # Creating a new message for this question
+        api_models.Question_Answer_Message.objects.create(
+            course=course,
+            user=user,
+            message=message,
+            question=question,
+        )
+
+        # Doing this because we fetched the actual question above, and want to return it but have to serialize it first
+        # This is so we can send the question back to the frontend inside of the Response
+        question_serializer = api_serializer.Question_AnswerSerializer(question)
+
+        return Response({"message": "Message Sent", "question": question_serializer.data})
 
 
 

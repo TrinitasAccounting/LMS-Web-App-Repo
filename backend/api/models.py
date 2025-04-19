@@ -40,7 +40,7 @@ PLATFORM_STATUS = (
     ("Published", "Published"),
 )
 
-# Important to note: the value is an integer and not a string. I had to fix this bug before
+# Important to note: the value is an integer and not a string. I had to fix this bug before.
 RATING = (
     (1, "1 Stars"),
     (2, "2 Stars"),
@@ -440,7 +440,7 @@ class Wishlist(models.Model):
 
 
     def __str__(self):
-        return self.code
+        return self.course.title
 
 class Country(models.Model):
     name = models.CharField(max_length=100)
